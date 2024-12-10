@@ -22,8 +22,8 @@ function EventsTable({ isModalOpen, setIsModalOpen }) {
 
   // Mutation to update production status
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status }) => {
-      return await UPDATE_EVENT(id, status);
+    mutationFn: async (record) => {
+      return await UPDATE_EVENT(record);
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries(["eventList"]);
@@ -36,7 +36,7 @@ function EventsTable({ isModalOpen, setIsModalOpen }) {
 
   // Handles the status update action
   function handleStatusUpdate(record, status) {
-    updateStatusMutation.mutate({ id: record.id, status });
+    updateStatusMutation.mutate({ _id: record._id, status });
   }
 
   // Generate custom action menu based on the current status
@@ -52,24 +52,17 @@ function EventsTable({ isModalOpen, setIsModalOpen }) {
       },
     ];
 
-    if (productionStatus === "Scheduled") {
-      menu.push(
-        {
-          heading: "Mark InProgress",
-          icon: <FaEdit size={16} />,
-          handleFunction: () => handleStatusUpdate(record, "In Progress"),
-        },
-        {
-          heading: "Mark Completed",
-          icon: <FaEdit size={16} />,
-          handleFunction: () => handleStatusUpdate(record, "Completed"),
-        }
-      );
-    } else if (productionStatus === "In Progress") {
+    if (productionStatus === "Ongoing") {
       menu.push({
-        heading: "Mark Completed",
+        heading: "Completed",
         icon: <FaEdit size={16} />,
         handleFunction: () => handleStatusUpdate(record, "Completed"),
+      });
+    } else {
+      menu.push({
+        heading: "Ongoing",
+        icon: <FaEdit size={16} />,
+        handleFunction: () => handleStatusUpdate(record, "Ongoing"),
       });
     }
 
@@ -102,7 +95,7 @@ function EventsTable({ isModalOpen, setIsModalOpen }) {
       width: 220,
       render: (text) => (
         <div className="overflow-hidden whitespace-nowrap">
-          {formatDate(text)}
+          {formatDateWithTime(text)}
         </div>
       ),
     },
@@ -113,7 +106,7 @@ function EventsTable({ isModalOpen, setIsModalOpen }) {
       width: 220,
       render: (text) => (
         <div className="overflow-hidden whitespace-nowrap">
-          {formatDate(text)}
+          {formatDateWithTime(text)}
         </div>
       ),
     },
@@ -136,16 +129,19 @@ function EventsTable({ isModalOpen, setIsModalOpen }) {
       width: 140,
       render: (text, record) => (
         <div className="flex justify-center">
-          {text === "Complete" ? (
-            <div className="overflow-hidden flex-wrap capitalize">{text}</div>
+          {text === "Completed" ? (
+            <div className="overflow-hidden flex-wrap capitalize bg-green-500 text-white px-2 py-1 rounded">
+              {text}
+            </div>
           ) : (
-            <div className="overflow-hidden flex-wrap capitalize bg-red">
+            <div className="overflow-hidden flex-wrap capitalize bg-red-500 text-white px-2 py-1 rounded">
               {text}
             </div>
           )}
         </div>
       ),
     },
+
     {
       title: "Actions",
       key: "actions",
@@ -192,9 +188,9 @@ function EventsTable({ isModalOpen, setIsModalOpen }) {
       {/* Pagination */}
       <Pagination
         className="flex justify-end mt-4"
-        pageSize={eventList?.data?.pagination?.itemsPerPage}
-        total={eventList?.data?.pagination?.totalItems}
-        current={eventList?.data?.pagination?.currentPage}
+        pageSize={eventList?.data?.pageSize}
+        total={eventList?.data?.totalRecord}
+        current={eventList?.data?.currentPage}
         onChange={(page) => onChange({ currentPage: Number(page) })}
       />
     </>

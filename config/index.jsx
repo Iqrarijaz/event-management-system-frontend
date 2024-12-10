@@ -1,8 +1,7 @@
 // env file config
 // base urls
-export const baseUrl = "http://localhost:3020";
+export const baseUrl = "http://localhost:5000";
 
-// "https://sandbox-backend.discountstorageinsurance.com"
 
 export const DOCUMENTS = {
   PROGRAM_POLICY: "PROGRAM_POLICY",

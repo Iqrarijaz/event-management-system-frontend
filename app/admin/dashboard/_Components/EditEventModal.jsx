@@ -13,21 +13,21 @@ import DateTimeField from "@/components/InnerPage/DateInput";
 
 // Validation schema for Formik
 const validationSchema = Yup.object().shape({
-  productName: Yup.string().required("Required"),
-  rawMaterialsUsed: Yup.string().required("Required"),
+  name: Yup.string().required("Required"),
+  location: Yup.string().required("Required"),
   startDate: Yup.date().required("Required"),
   endDate: Yup.date()
     .min(Yup.ref("startDate"), "End date cannot be before start date")
     .required("Required"),
-  productionStatus: Yup.string().required("Required"),
+  description: Yup.string().required("Required"),
 });
 
 const initialValues = {
-  productName: "",
-  rawMaterialsUsed: "",
+  name: "",
+  description: "",
   startDate: "",
   endDate: "",
-  productionStatus: "",
+  location: "",
 };
 
 function EditEventModal({ isModalOpen, setIsModalOpen }) {
@@ -39,30 +39,30 @@ function EditEventModal({ isModalOpen, setIsModalOpen }) {
   useEffect(() => {
     if (record) {
       const {
-        id,
-        productName,
-        rawMaterialsUsed,
+        _id,
+        name,
+        location,
+        description,
         startDate,
         endDate,
-        productionStatus,
       } = record;
 
       formikRef.current?.setValues({
-        id,
-        productName,
-        rawMaterialsUsed,
+        _id,
+        name,
+        location,
+        description,
         startDate: startDate
           ? new Date(startDate).toISOString().slice(0, 16)
           : "",
         endDate: endDate ? new Date(endDate).toISOString().slice(0, 16) : "",
-        productionStatus,
       });
     }
   }, [record]);
 
   // Mutation for updating the production task
-  const updateProductionTask = useMutation({
-    mutationKey: ["updateProductionTask"],
+  const updateEvent = useMutation({
+    mutationKey: ["updateEvent"],
     mutationFn: async (values) => await UPDATE_EVENT(values),
     onSuccess: (data) => {
       setIsModalOpen({ name: null, state: false });
@@ -93,7 +93,7 @@ function EditEventModal({ isModalOpen, setIsModalOpen }) {
       <div>
         <div className="mb-4 flex justify-between">
           <h1 className="inner-page-title text-3xl text-black">
-            Update Production Task
+            Update Event
           </h1>
         </div>
 
@@ -101,39 +101,33 @@ function EditEventModal({ isModalOpen, setIsModalOpen }) {
           innerRef={formikRef}
           initialValues={initialValues}
           validationSchema={validationSchema}
-          onSubmit={(values) => updateProductionTask.mutate(values)}
+          onSubmit={(values) => updateEvent.mutate(values)}
         >
           {({ errors, values }) => (
             <Form className="bg-gray-100 p-6 rounded-sm overflow-y-auto">
-              {updateProductionTask.isLoading && <Loading />}
+              {updateEvent.isLoading && <Loading />}
 
-              {/* Form Fields */}
-              <FormField label="Product Name" name="productName" />
-              <DescriptionField
-                label="Raw Materials Used"
-                name="rawMaterialsUsed"
-              />
-              <SelectField
-                label="Production Status"
-                name="productionStatus"
-                options={[
-                  { value: "Scheduled", label: "Scheduled" },
-                  { value: "In Progress", label: "In Progress" },
-                  { value: "Completed", label: "Completed" },
-                ]}
-              />
-              <DateTimeField
-                label="Start Date and Time"
-                name="startDate"
-                placeholder="Select start date and time"
-              />
-              <DateTimeField
-                label="End Date and Time"
-                name="endDate"
-                placeholder="Select end date and time"
-              />
+              <div className="">
+                {/* Custom form fields using reusable components */}
+                <FormField label="Event Name" name="name" />
+                <FormField label="Event Location" name="location" />
 
-              {/* Action Buttons */}
+                <DescriptionField label="Description" name="description" />
+
+                <DateTimeField
+                  label="Start Date"
+                  name="startDate"
+                  placeholder="Select start date"
+                  disabled={false}
+                />
+
+                <DateTimeField
+                  label="End Date"
+                  name="endDate"
+                  placeholder="Select end date"
+                  disabled={false}
+                />
+              </div>
               <div className="flex justify-end mt-8 gap-6">
                 <Button onClick={handleModalCancel} className="cancel-button">
                   Cancel

@@ -1,6 +1,6 @@
 "use client";
 
-import { LIST_EVENTS } from "@/apis/events";
+import { GET_EVENT_CARDS, LIST_EVENTS } from "@/apis/events";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useQuery } from "react-query";
 import { toast } from "react-toastify";
@@ -12,20 +12,30 @@ export const useEventContext = () => useContext(eventContext);
 
 function EventContextProvider({ children }) {
   const [filters, setFilters] = useState({
-    itemsPerPage: 10,
+    limit: 10,
     currentPage: 1,
     search: null,
-    sortOrder: -1,
     sortingKey: "_id",
     onChangeSearch: false,
-    advance: null,
   });
 
   const debFilter = useDebounce(filters, filters?.onChangeSearch ? 1000 : 0);
+
   const eventList = useQuery({
     queryKey: ["eventList", JSON.stringify(debFilter)],
     queryFn: async () => {
       return await LIST_EVENTS(debFilter);
+    },
+    enabled: true,
+    onError: (error) => {
+      console.error("Error fetching data:", error);
+      toast.error("Something went wrong. Please try again later.");
+    },
+  });
+  const eventCards = useQuery({
+    queryKey: ["eventList"],
+    queryFn: async () => {
+      return await GET_EVENT_CARDS();
     },
     enabled: true,
     onError: (error) => {
@@ -40,7 +50,7 @@ function EventContextProvider({ children }) {
 
   return (
     <eventContext.Provider
-      value={{ filters, eventList, setFilters, onChange }}
+      value={{ filters, eventList, eventCards, setFilters, onChange }}
     >
       {children}
     </eventContext.Provider>

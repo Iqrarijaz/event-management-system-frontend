@@ -13,20 +13,20 @@ import DateTimeField from "@/components/InnerPage/DateInput";
 
 // Validation schema using Yup for Formik
 const validationSchema = Yup.object().shape({
-  productName: Yup.string().required("Required"),
-  rawMaterialsUsed: Yup.string().required("Required"),
+  name: Yup.string().required("Required"),
+  location: Yup.string().required("Required"),
   startDate: Yup.date().required("Required"),
   endDate: Yup.date().optional(),
-  productionStatus: Yup.string().required("Required"),
+  description: Yup.string().required("Required"),
 });
 
 // Initial values for the form fields
 const initialValues = {
-  productName: "",
-  rawMaterialsUsed: "",
+  name: "",
+  description: "",
   startDate: "",
   endDate: "",
-  productionStatus: "",
+  location: "",
 };
 
 function AddEventModal({ isModalOpen, setIsModalOpen }) {
@@ -37,9 +37,9 @@ function AddEventModal({ isModalOpen, setIsModalOpen }) {
   const formikRef = useRef(null);
 
   const queryClient = useQueryClient();
-  // React Query hook for handling mutation (createProductionTask)
-  const createProductionTask = useMutation({
-    mutationKey: ["createProductionTask"],
+  // React Query hook for handling mutation (createEvent)
+  const createEvent = useMutation({
+    mutationKey: ["createEvent"],
     mutationFn: async (values) => {
       return await CREATE_EVENT(values); // Assuming CREATE_ROLE is a function that sends a request
     },
@@ -55,7 +55,7 @@ function AddEventModal({ isModalOpen, setIsModalOpen }) {
     },
     onError: (error) => {
       console.log(error);
-      toast.error(error?.response?.data?.error); // Show error toast if mutation fails
+      toast.error(error?.response?.data?.message); // Show error toast if mutation fails
     },
   });
 
@@ -78,7 +78,7 @@ function AddEventModal({ isModalOpen, setIsModalOpen }) {
   // Function to handle form submission
   function handleSubmit(values) {
     try {
-      createProductionTask.mutate(values); // Trigger the mutation with form values
+      createEvent.mutate(values); // Trigger the mutation with form values
     } catch (error) {
       console.error("Error submitting form:", error);
     }
@@ -96,7 +96,7 @@ function AddEventModal({ isModalOpen, setIsModalOpen }) {
       <div>
         <div className="mb-4 flex justify-between">
           <h1 className="inner-page-title text-3xl text-black p-0">
-            Add Production Task
+            Add Event
           </h1>
           <Button
             className="reset-button"
@@ -120,35 +120,29 @@ function AddEventModal({ isModalOpen, setIsModalOpen }) {
                 <Form>
                   <div className="form-class mx-auto gap-6 relative  bg-gray-100 p-6 rounded-sm overflow-y-auto">
                     {/* Show loading animation if mutation is in progress */}
-                    {createProductionTask?.status === "loading" && <Loading />}
+                    {createEvent?.status === "loading" && <Loading />}
 
                     <div className="">
                       {/* Custom form fields using reusable components */}
-                      <FormField label="Product Name" name="productName" />
+                      <FormField label="Event Name" name="name" />
+                      <FormField label="Event Location" name="location" />
+
                       <DescriptionField
-                        label="Raw Materials Used"
-                        name="rawMaterialsUsed"
+                        label="Description"
+                        name="description"
                       />
-                      <SelectField
-                        label="Production Status"
-                        name="productionStatus"
-                        options={[
-                          { value: "Scheduled", label: "Scheduled" },
-                          { value: "In Progress", label: "In Progress" },
-                          { value: "Completed", label: "Completed" },
-                        ]}
-                      />
+                      
                       <DateTimeField
-                        label="Start Date and Time"
+                        label="Start Date"
                         name="startDate"
-                        placeholder="Select date and time"
+                        placeholder="Select start date"
                         disabled={false}
                       />
 
                       <DateTimeField
-                        label="End Date and Time"
+                        label="End Date"
                         name="endDate"
-                        placeholder="Select date and time"
+                        placeholder="Select end date"
                         disabled={false}
                       />
                     </div>

@@ -1,18 +1,20 @@
-import Loading from "@/animations/homePageLoader";
-import {
-  DELETE_APP_MODULE,
-  DELETE_EVENT,
-  DELETE_PRODUCTION_TASK,
-} from "@/apis/events";
+"use client";
+import React, { useState } from "react";
 import { Button, Modal } from "antd";
-import React from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { toast } from "react-toastify";
+import { DELETE_EVENT } from "@/apis/events";
+import Loading from "@/animations/homePageLoader";
 
 function DeleteEventModal({ isModalOpen, setIsModalOpen }) {
   const queryClient = useQueryClient();
   const { record, name, state } = isModalOpen;
 
+  // State for password input
+  const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState("");
+
+  // Mutation for deleting the event
   const deleteMutation = useMutation({
     mutationKey: ["deleteMutation"],
     mutationFn: async (values) => {
@@ -26,53 +28,82 @@ function DeleteEventModal({ isModalOpen, setIsModalOpen }) {
         state: false,
         record: null,
       });
+      setPassword(""); // Clear the password field
     },
     onError: (error) => {
-      console.log(error);
-      toast.error(error?.response?.data?.error);
+      console.error(error);
+      toast.error(
+        error?.response?.data?.error || "Failed to delete the event."
+      );
     },
   });
+
+  // Function to close the modal
   function handleModalCancel() {
-    try {
-      // Set the isModalOpen state to false to close the modal
-      setIsModalOpen({
-        name: null,
-        state: false,
-      });
-    } catch (error) {
-      console.log({ error });
-    }
+    setIsModalOpen({
+      name: null,
+      state: false,
+      record: null,
+    });
+    setPassword(""); // Reset the password field
+    setErrors(""); // Clear errors
   }
 
   // Function to handle delete mutation
   function handleDeleteMutation() {
-    try {
-      deleteMutation.mutate(record?.id);
-    } catch (error) {
-      console.log({ error });
+    if (!password) {
+      setErrors("Password is required to delete the event.");
+      return;
     }
+
+    deleteMutation.mutate({
+      _id: record?._id,
+      password,
+    });
   }
+
   return (
     <Modal
-      title="Delete Production Task"
+      title="Delete Event"
       className="!rounded-sm"
       centered
       width={600}
       open={name === "delete" && state === true}
       closeIcon={false}
       footer={false}
+      onCancel={handleModalCancel}
     >
       <div className="mb-6 relative">
-        Are you sure you want to delete this production task
+        <p>
+          Are you sure you want to delete
+          <span className="font-bold capitalize"> {record?.name}</span>?
+        </p>
         {deleteMutation?.status === "loading" && <Loading />}
-        <span className="font-bold capitalize">{record?.name}</span>?
-        
+        <div className="mt-4">
+          <label className="block mb-2">Enter password to confirm</label>
+          <input
+            type="password"
+            name="password"
+            value={password}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              setErrors(""); // Clear errors on input
+            }}
+            placeholder="Enter password to confirm"
+            className="w-full p-2 border rounded"
+          />
+          {errors && <p className="text-red-500">{errors}</p>}
+        </div>
       </div>
       <div className="flex justify-end gap-6">
         <Button className="cancel-button" onClick={handleModalCancel}>
           Cancel
         </Button>
-        <Button className="apply-button" onClick={handleDeleteMutation}>
+        <Button
+          className="apply-button"
+          onClick={handleDeleteMutation}
+          disabled={deleteMutation?.status === "loading"}
+        >
           Delete
         </Button>
       </div>
