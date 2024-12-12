@@ -1,8 +1,22 @@
+import { baseUrl } from "@/config";
 import { Axios } from "@/interceptors";
+import axios from "axios";
 
 export async function LIST_EVENTS(data) {
   try {
     const response = await Axios.get('/api/events', {
+      params: data,  
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    throw error;
+  }
+}
+
+export async function LIST_EVENTS_FOR_USER(data) {
+  try {
+    const response = await axios.get(`${baseUrl}/api/events/list`, {
       params: data,  
     });
     return response.data;

@@ -12,7 +12,7 @@ function SearchInput({ setFilters }) {
         }));
       }}
       placeholder="Search..."
-      className="border-2 border-[#3B82F6] focus:outline-none rounded-sm"
+      className="border-2 border-[#3B82F6] focus:outline-none rounded-sm w-[300px]"
       prefix={<IoSearchCircle size={30} color="#3B82F6" className="me-2" />}
       onChange={(event) => {
         const value = event?.target?.value;
